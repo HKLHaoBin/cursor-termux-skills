@@ -17,11 +17,66 @@
 
 ## 从零安装
 
-不要假设手机上已经有 Linux、Git、Node 或可用的 Cursor CLI。按顺序做；某步已经做过就跳过。架构必须是 **ARM64**（`aarch64`）。官方 `curl https://cursor.com/install | bash` 在原生 Termux 上会失败（glibc 的 `node` 无法执行），下面用社区包 `cursor-termux`，不要靠改 PATH 去修那个错误。
+全新 Termux **没有** Python / Git / Node。入口是仓库根目录的 bash 脚本（Termux 默认有 `curl` 和 `bash`）。不要跑官方 `curl https://cursor.com/install | bash`（glibc 的 `node` 在 Bionic 上无法执行）。不要靠改 PATH 修 `cannot execute: required file not found`。
 
-卡住时：`pkg` / `dpkg` / `tree-sitter` 等 Agent 能自己跑的修复见 `cursor-agent-termux-install`；Shell 空输出见 `cursor-agent-termux`。
+架构必须是 **ARM64**（`aarch64`）。脚本会先搭环境、再装 CLI、再预编译 native / 接好 `agent` 启动器。人只做下面三步；登录必须在系统浏览器里完成。
 
 ### 1. 安装 F-Droid 和 Termux
+
+不要用 Google Play 上的 Termux（源和签名经常不对，后面 `pkg` 会全失败）。
+
+1. 用系统浏览器打开 [https://f-droid.org](https://f-droid.org)，下载并安装 **F-Droid**。若系统拦截未知来源，在设置里允许该浏览器/文件管理器安装应用。
+2. 打开 F-Droid，搜索 **Termux**，安装 [Termux](https://f-droid.org/en/packages/com.termux/)（包名 `com.termux`）。
+3. 打开 Termux。
+
+可选：`termux-setup-storage`（会弹系统权限框）。安装脚本**不会**替你点权限。
+
+### 2. 跑安装器
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/HKLHaoBin/cursor-termux-skills/main/install.sh | bash
+```
+
+已克隆本仓库时：
+
+```bash
+bash "$HOME/cursor-termux-skills/install.sh"
+```
+
+可能要几分钟（含 tree-sitter 编译），别让手机休眠。全部镜像 `bad` 时脚本会退出并说明换网络 / 对时间，不会假装成功。
+
+### 3. 登录
+
+```bash
+source ~/.bashrc
+NO_OPEN_BROWSER=1 agent login
+agent status
+```
+
+把打印的 URL 粘到系统浏览器完成授权后：
+
+```bash
+cd ~ && agent
+```
+
+新开一次 Agent 会话后才会读到拷进去的 Skill。也可在对话里点名「按 cursor-agent-termux-install 装 CLI」或「按 cursor-agent-termux 修 Shell」。
+
+更新 Agent 后重新跑同一条 `install.sh`（幂等），或：
+
+```bash
+cursor-termux
+"$HOME/cursor-termux-skills/skills/cursor-agent-termux-install/scripts/rebuild-termux-natives"
+```
+
+并确认 `agent` 仍指向 `cursor-agent-proot`。
+
+脚本失败时：把完整终端输出交给 Agent（Skill：`cursor-agent-termux-install`），或按下面手动步骤。
+
+## 脚本失败时的手动步骤
+
+不要假设手机上已经有 Linux、Git、Node 或可用的 Cursor CLI。按顺序做；某步已经做过就跳过。
+
+### 1. 确认 Termux
 
 不要用 Google Play 上的 Termux（源和签名经常不对，后面 `pkg` 会全失败）。
 
@@ -270,6 +325,7 @@ cursor-termux
 cursor-termux-skills/
 ├── README.md
 ├── LICENSE
+├── install.sh
 └── skills/
     ├── cursor-agent-termux-install/
     ├── cursor-agent-termux/

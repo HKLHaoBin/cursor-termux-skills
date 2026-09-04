@@ -21,7 +21,19 @@ description: >-
 
 本 Skill 覆盖 **第一次装到 `cursor-agent --help` 能跑**。已经能启动、但 Shell 假成功 / `/tmp` / MCP，改走 [`cursor-agent-termux`](../cursor-agent-termux/SKILL.md)。
 
-从零环境（F-Droid Termux、`pkg`、克隆本仓库、装 CLI）的完整命令见仓库 README「从零安装」。下面默认 Agent 在 **用户的 Termux 交互 shell** 里执行；人没法点的步骤（换网络、选镜像、openssl 提示、浏览器登录）仍要交给用户。
+优先跑仓库根目录 [`install.sh`](../../install.sh)，不要逐步重探：
+
+```bash
+# 尚未克隆时（Termux 默认有 curl + bash）
+curl -fsSL https://raw.githubusercontent.com/HKLHaoBin/cursor-termux-skills/main/install.sh | bash
+
+# 已在 $HOME/cursor-termux-skills
+bash "$HOME/cursor-termux-skills/install.sh"
+```
+
+脚本会先装环境再装 CLI，并预编译 native、把 `agent` 接到 `cursor-agent-proot`、拷 Skill、写入 `Shell(**)`。**不要**替用户执行 `agent login`；成功后让用户在系统浏览器完成 `NO_OPEN_BROWSER=1 agent login`。
+
+人必须自己做的：F-Droid 安装 Termux、存储权限、手机完全没网、浏览器登录。脚本失败时再按下面诊断；完整人话步骤见 README「从零安装」和「脚本失败时的手动步骤」。
 
 ## 何时使用
 
