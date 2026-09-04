@@ -14,6 +14,7 @@ export PATH="${HOME}/.local/bin:${PREFIX}/bin:${PATH:-/usr/bin}"
 
 step() { printf '\n==> %s\n' "$*"; }
 ok() { printf 'ok  %s\n' "$*"; }
+warn() { printf '!   %s\n' "$*"; }
 die() { printf 'error: %s\n' "$*" >&2; exit 1; }
 
 require_termux() {
@@ -177,11 +178,33 @@ EOF
 
 install_cursor_cli() {
   step "安装 cursor-termux（不用官方 linux glibc node）"
+  local launcher="${HOME}/.local/bin/cursor-agent"
+  local preload="${HOME}/.local/share/cursor-agent/termux-preload.js"
+  local has_index=0
+  if ls "${HOME}/.local/share/cursor-agent/versions/"*/index.js >/dev/null 2>&1; then
+    has_index=1
+  fi
+
+  # Re-running cursor-termux wipes version dirs and compiled natives.
+  # Its smoke test often exits non-zero on MODULE_NOT_FOUND tree-sitter.
+  if [[ -x "$launcher" && -f "$preload" && "$has_index" -eq 1 ]]; then
+    if "$launcher" --help >/dev/null 2>&1; then
+      ok "cursor-agent 已可用，跳过 cursor-termux"
+      return 0
+    fi
+    warn "cursor-termux 已装完，smoke test 缺 native；跳过重装以免清掉版本目录"
+    return 0
+  fi
+
   npm install -g cursor-termux
   command -v cursor-termux >/dev/null || die "cursor-termux 未进入 PATH"
-  cursor-termux
-  [[ -x "${HOME}/.local/bin/cursor-agent" ]] || die "缺少 ~/.local/bin/cursor-agent"
-  [[ -f "${HOME}/.local/share/cursor-agent/termux-preload.js" ]] || die "缺少 termux-preload.js；cursor-termux 可能失败"
+  local st=0
+  cursor-termux || st=$?
+  [[ -x "$launcher" ]] || die "缺少 ~/.local/bin/cursor-agent"
+  [[ -f "$preload" ]] || die "缺少 termux-preload.js；cursor-termux 可能失败"
+  if [[ "$st" -ne 0 ]]; then
+    warn "cursor-termux smoke test 失败是预期的（常见缺 tree-sitter），接着编译 native"
+  fi
   ok "cursor-agent 已安装"
 }
 

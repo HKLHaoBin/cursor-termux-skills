@@ -123,7 +123,7 @@ cursor-termux
 - `~/.local/bin/cursor-agent`（带 `termux-preload.js`）
 - `~/.local/share/cursor-agent/versions/<ver>/`
 
-`cursor-termux` 会清掉版本目录。若刚编过 native 模块，装完必须再编一次。
+`cursor-termux` 末尾的 smoke test 常在编 native 之前就因 `tree-sitter` 以非 0 退出。这不代表安装失败：启动器和 preload 已经写好。不要因此重跑 `cursor-termux`（会清掉版本目录），接着跑 [`scripts/rebuild-termux-natives`](scripts/rebuild-termux-natives)。`install.sh` 会把这次失败当成预期并继续编译。
 
 ### 3. 补 tree-sitter 原生模块
 
