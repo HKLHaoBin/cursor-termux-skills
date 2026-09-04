@@ -21,7 +21,7 @@ description: >-
 
 本 Skill 覆盖 **第一次装到 `cursor-agent --help` 能跑**。已经能启动、但 Shell 假成功 / `/tmp` / MCP，改走 [`cursor-agent-termux`](../cursor-agent-termux/SKILL.md)。
 
-需要人动手的步骤（换网络、F-Droid、浏览器登录、openssl 交互提示）见仓库 README「安装之前」。下面默认 Agent 在 **用户的 Termux 交互 shell** 里执行命令。
+从零环境（F-Droid Termux、`pkg`、克隆本仓库、装 CLI）的完整命令见仓库 README「从零安装」。下面默认 Agent 在 **用户的 Termux 交互 shell** 里执行；人没法点的步骤（换网络、选镜像、openssl 提示、浏览器登录）仍要交给用户。
 
 ## 何时使用
 
