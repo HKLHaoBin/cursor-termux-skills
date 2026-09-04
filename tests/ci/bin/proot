@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# Mimic `proot -b src:dst command...` by dropping -b pairs and exec.
+while [[ "${1:-}" == "-b" ]]; do
+  shift 2 || true
+done
+exec "$@"

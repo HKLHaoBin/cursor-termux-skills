@@ -1,4 +1,4 @@
-#!/data/data/com.termux/files/usr/bin/bash
+#!/usr/bin/env bash
 # Rebuild tree-sitter (and follow-on missing modules) for cursor-termux Agent.
 # Run on-device after cursor-termux install or agent update.
 set -euo pipefail

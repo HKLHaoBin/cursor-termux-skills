@@ -1,4 +1,4 @@
-#!/data/data/com.termux/files/usr/bin/bash
+#!/usr/bin/env bash
 # Launch Agent under proot with writable /tmp (needed for Shell tool on Termux).
 # Install to ~/.local/bin/cursor-agent-proot and point PATH `agent` here.
 # Never exec PATH `agent` from this script (recursion).

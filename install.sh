@@ -5,7 +5,7 @@ set -euo pipefail
 
 REPO_NAME="cursor-termux-skills"
 REPO_OWNER="HKLHaoBin"
-ZIP_URL="https://github.com/${REPO_OWNER}/${REPO_NAME}/archive/refs/heads/main.zip"
+ZIP_URL="${CURSOR_TERMUX_ZIP_URL:-https://github.com/${REPO_OWNER}/${REPO_NAME}/archive/refs/heads/main.zip}"
 HOME="${HOME:-/data/data/com.termux/files/home}"
 PREFIX="${PREFIX:-/data/data/com.termux/files/usr}"
 REPO_DIR="${HOME}/${REPO_NAME}"
@@ -18,6 +18,11 @@ warn() { printf '!   %s\n' "$*"; }
 die() { printf 'error: %s\n' "$*" >&2; exit 1; }
 
 require_termux() {
+  if [[ "${CURSOR_TERMUX_CI:-}" == 1 ]]; then
+    [[ -n "${PREFIX}" && -n "${HOME}" ]] || die "CI 需要设置 HOME 和 PREFIX"
+    ok "CI harness  PREFIX=${PREFIX}"
+    return 0
+  fi
   if [[ ! -d /data/data/com.termux/files/usr ]] && [[ "${PREFIX}" != /data/data/com.termux/files/usr* ]]; then
     die "请在 Termux 里运行（F-Droid 版 com.termux）。当前 PREFIX=${PREFIX}"
   fi
@@ -28,19 +33,24 @@ require_termux() {
 }
 
 wait_for_apt() {
-  local i pid
+  # Only wait on THIS PREFIX's dpkg locks. Do not pgrep host apt (breaks CI / non-Termux).
+  local frontend="${PREFIX}/var/lib/dpkg/lock-frontend"
+  local lock="${PREFIX}/var/lib/dpkg/lock"
+  local i pids
+  mkdir -p "${PREFIX}/var/lib/dpkg"
   for i in $(seq 1 60); do
-    pid="$(pgrep -x apt || true)"
-    pid="${pid:-$(pgrep -x apt-get || true)}"
-    pid="${pid:-$(pgrep -x dpkg || true)}"
-    if [[ -z "$pid" ]]; then
+    pids=""
+    if command -v fuser >/dev/null 2>&1; then
+      pids="$(fuser "$frontend" "$lock" 2>/dev/null || true)"
+    fi
+    if [[ -z "${pids//$'\n'/}" ]]; then
       return 0
     fi
-    printf '等待 apt/dpkg 结束（pid %s）…\n' "$(echo "$pid" | tr '\n' ' ')"
+    printf '等待 apt/dpkg 锁（pid %s）…\n' "$(echo "$pids" | tr '\n' ' ')"
     sleep 2
   done
-  echo "仍有 apt/dpkg 占用锁。请等另一个 Termux 会话结束，或把下面输出交给 Agent：" >&2
-  ps aux 2>/dev/null | grep -E '[a]pt|[d]pkg' >&2 || true
+  echo "仍有进程占用 ${frontend}。请等另一个 Termux 会话结束。" >&2
+  echo "pids: ${pids}" >&2
   die "未抢锁（默认不 kill 其它 apt 进程）"
 }
 
@@ -123,7 +133,7 @@ detect_local_repo() {
 
 fetch_repo() {
   if detect_local_repo; then
-    if [[ -d "${REPO_DIR}/.git" ]] && command -v git >/dev/null; then
+    if [[ "${CURSOR_TERMUX_CI:-}" != 1 ]] && [[ -d "${REPO_DIR}/.git" ]] && command -v git >/dev/null; then
       git -C "${REPO_DIR}" pull --ff-only origin main 2>/dev/null || true
     fi
     return 0

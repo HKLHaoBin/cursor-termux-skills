@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Mock of the community cursor-termux installer.
+set -euo pipefail
+LAUNCHER="${HOME}/.local/bin/cursor-agent"
+SHARE="${HOME}/.local/share/cursor-agent"
+VER="${SHARE}/versions/ci-test"
+mkdir -p "$(dirname "$LAUNCHER")" "$VER" "$SHARE"
+cat >"$LAUNCHER" <<'EOF'
+#!/usr/bin/env bash
+# cursor-agent launcher (CI mock)
+# termux-preload.js
+set -euo pipefail
+ROOT="${HOME}/.local/share/cursor-agent/versions/ci-test"
+if [[ ! -d "${ROOT}/node_modules/tree-sitter" ]]; then
+  echo "Error: Cannot find module 'tree-sitter'" >&2
+  echo "    at Module._resolveFilename" >&2
+  exit 1
+fi
+echo "Usage: agent [options] [command] [prompt...]"
+echo "Start the Cursor Agent"
+exit 0
+EOF
+chmod +x "$LAUNCHER"
+printf '// termux preload mock\n' >"${SHARE}/termux-preload.js"
+printf "require('tree-sitter');\n" >"${VER}/index.js"
+echo "ok Mock cursor-termux installed launcher + preload"
+# Match real installer: smoke test fails before natives exist.
+echo "-> Smoke test..."
+"$LAUNCHER" --help
+exit 1

@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == "-v" ]]; then
+  echo "10.9.2"
+  exit 0
+fi
+if [[ "${1:-}" == "install" ]]; then
+  shift
+  if [[ "$*" == *cursor-termux* ]]; then
+    dest="${PREFIX}/bin/cursor-termux"
+    mkdir -p "$(dirname "$dest")"
+    cp "${CURSOR_TERMUX_CI_BIN}/cursor-termux" "$dest"
+    chmod +x "$dest"
+    echo "added 1 package (cursor-termux mock)"
+    exit 0
+  fi
+  for arg in "$@"; do
+    case "$arg" in
+      -*) continue ;;
+      tree-sitter*)
+        mkdir -p "node_modules/${arg}"
+        echo "ok mock install ${arg} in ${PWD}"
+        ;;
+    esac
+  done
+  exit 0
+fi
+if [[ "${1:-}" == "install-scripts" || "${1:-}" == "rebuild" ]]; then
+  echo "ok npm $*"
+  exit 0
+fi
+echo "npm $*"
+exit 0

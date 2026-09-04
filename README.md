@@ -328,6 +328,8 @@ cursor-termux-skills/
 ├── README.md
 ├── LICENSE
 ├── install.sh
+├── .github/workflows/install-sh.yml
+├── tests/ci/
 └── skills/
     ├── cursor-agent-termux-install/
     ├── cursor-agent-termux/
