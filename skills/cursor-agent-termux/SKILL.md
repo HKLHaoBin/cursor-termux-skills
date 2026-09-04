@@ -12,6 +12,8 @@ description: >-
 
 在 Termux（Android，Bionic，常见 aarch64）上跑官方 Agent CLI。系统 `/tmp` 对 Termux 用户通常不可写；Agent 的 Shell 工具若把临时文件写到 `/tmp`，会 **假成功**：exit 0、无 stdout、无文件副作用。
 
+若 `agent` 还不能 `--help`（glibc `node` 无法执行、缺 `nodejs-lts`、`cursor-termux` smoke test 缺 `tree-sitter`），先按 [`cursor-agent-termux-install`](../cursor-agent-termux-install/SKILL.md) 装通，再回到本 Skill。
+
 只做下面的诊断与落地，不要从「改 TMPDIR 再重启看看」重新试错。仅设 TMPDIR 或仅放宽 allowlist **不够**。
 
 ## 何时使用
@@ -151,7 +153,7 @@ Agent 内应能看到 `SHELL_OK`，且探针文件存在。
 
 ## Agent 更新之后
 
-重跑 `cursor-termux` 打补丁。版本目录会变（`~/.local/share/cursor-agent/versions/...`）。用探测，不要把某次哈希写死进记忆当永久事实。
+重跑 `cursor-termux` 打补丁。版本目录会变（`~/.local/share/cursor-agent/versions/...`），**tree-sitter 等 native 也会被清掉**，按 [`cursor-agent-termux-install`](../cursor-agent-termux-install/SKILL.md) 再编一次。用探测，不要把某次哈希写死进记忆当永久事实。
 
 ```bash
 ls -d "$HOME"/.local/share/cursor-agent/versions/* 2>/dev/null

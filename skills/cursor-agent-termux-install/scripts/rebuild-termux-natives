@@ -1,0 +1,53 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# Rebuild tree-sitter (and follow-on missing modules) for cursor-termux Agent.
+# Run on-device after cursor-termux install or agent update.
+set -euo pipefail
+
+INSTALL_ROOT="${HOME}/.local/share/cursor-agent"
+LAUNCHER="${HOME}/.local/bin/cursor-agent"
+
+if [[ ! -x "$LAUNCHER" ]]; then
+  echo "rebuild-termux-natives: missing $LAUNCHER (run cursor-termux first)" >&2
+  exit 1
+fi
+
+VERDIR="$(ls -d "${INSTALL_ROOT}/versions/"* 2>/dev/null | tail -n 1 || true)"
+if [[ -z "$VERDIR" || ! -f "$VERDIR/index.js" ]]; then
+  echo "rebuild-termux-natives: no agent version dir under ${INSTALL_ROOT}/versions" >&2
+  exit 1
+fi
+
+cd "$VERDIR"
+echo "rebuild-termux-natives: $VERDIR"
+
+ensure_pkg() {
+  local name="$1"
+  npm install "$name" --foreground-scripts
+  npm install-scripts approve "$name" 2>/dev/null || true
+  npm rebuild "$name" --foreground-scripts
+}
+
+ensure_pkg tree-sitter
+
+mapfile -t langs < <(grep -oE 'tree-sitter-[a-z0-9-]+' index.js | sort -u || true)
+for lang in "${langs[@]:-}"; do
+  ensure_pkg "$lang"
+done
+
+export PATH="${HOME}/.local/bin:${PATH}"
+for _ in $(seq 1 40); do
+  if OUT="$("$LAUNCHER" --help 2>&1)"; then
+    echo "rebuild-termux-natives: cursor-agent --help ok"
+    exit 0
+  fi
+  MOD="$(printf '%s\n' "$OUT" | grep -oE "Cannot find module '[^']+'" | head -1 | sed "s/Cannot find module '//;s/'//")"
+  if [[ -z "${MOD:-}" ]]; then
+    printf '%s\n' "$OUT" >&2
+    exit 1
+  fi
+  echo "rebuild-termux-natives: installing missing $MOD"
+  ensure_pkg "$MOD"
+done
+
+echo "rebuild-termux-natives: still failing after 40 modules" >&2
+exit 1
