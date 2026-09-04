@@ -1,0 +1,11 @@
+---
+description: 任务前读记忆文件；有价值经验写入 MEMORY.md
+alwaysApply: true
+---
+
+# 记忆工作流
+
+1. 开始任何任务前，先阅读 `MEMORY.md`（工作区根目录）。
+2. 发现可复用经验时，追加到 `MEMORY.md`（经验日志或对应章节）。
+3. 勿将密钥、token、密码写入记忆文件。
+4. 更完整的约定见根目录 `Agents.md`。

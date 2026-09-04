@@ -1,0 +1,11 @@
+.DS_Store
+*.swp
+*~
+.env
+.env.*
+*.pem
+*.key
+auth.json
+agent-mcp.env
+**/.config/
+**/secrets/

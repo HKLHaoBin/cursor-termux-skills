@@ -1,0 +1,31 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# Launch Agent under proot with writable /tmp (needed for Shell tool on Termux).
+# Install to ~/.local/bin/cursor-agent-proot and point PATH `agent` here.
+# Never exec PATH `agent` from this script (recursion).
+set -euo pipefail
+
+PREFIX="${PREFIX:-/data/data/com.termux/files/usr}"
+mkdir -p "${PREFIX}/tmp" "${HOME}/tmp"
+export TMPDIR="${PREFIX}/tmp"
+export TMP="${PREFIX}/tmp"
+export TEMP="${PREFIX}/tmp"
+
+# Optional MCP tokens for non-interactive Agent. File must be chmod 600 and never committed.
+MCP_ENV="${HOME}/.config/agent-mcp.env"
+if [[ -f "${MCP_ENV}" ]]; then
+  # shellcheck disable=SC1090
+  source "${MCP_ENV}"
+fi
+
+REAL_AGENT="${HOME}/.local/bin/cursor-agent"
+if [[ ! -x "${REAL_AGENT}" ]]; then
+  echo "cursor-agent-proot: missing ${REAL_AGENT}" >&2
+  exit 1
+fi
+
+if command -v proot >/dev/null 2>&1; then
+  exec proot -b "${PREFIX}/tmp:/tmp" "${REAL_AGENT}" "$@"
+else
+  echo "proot not installed; falling back to plain agent (pkg install proot)" >&2
+  exec "${REAL_AGENT}" "$@"
+fi
