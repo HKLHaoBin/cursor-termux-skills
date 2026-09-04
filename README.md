@@ -321,6 +321,8 @@ cursor-termux
 
 并确认 `agent` 仍指向 `cursor-agent-proot`。
 
+GitHub Actions 用假 Termux 前缀跑 `tests/ci/run.sh`（mock `pkg`/`cursor-termux`），用来拦住安装器逻辑回归；不能代替真机。
+
 ## 仓库结构
 
 ```
