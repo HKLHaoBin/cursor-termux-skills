@@ -45,6 +45,8 @@ bash "$HOME/cursor-termux-skills/install.sh"
 
 可能要几分钟（含 tree-sitter 编译），别让手机休眠。全部镜像 `bad` 时脚本会退出并说明换网络 / 对时间，不会假装成功。
 
+`cursor-termux` 自己的 smoke test 报 `Cannot find module 'tree-sitter'` 是预期的：启动器已经装好，接着由脚本编译 native。若旧版 `install.sh` 在这里停住了，**不要再跑 `cursor-termux`**（会清掉刚下的版本目录），重新执行上面的 `curl | bash` 或 `bash install.sh` 即可从编译 native 续上。
+
 ### 3. 登录
 
 ```bash
